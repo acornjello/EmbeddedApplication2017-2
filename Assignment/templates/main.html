@@ -1,0 +1,23 @@
+<html>
+<meta http-equiv="refresh" content="5">
+<head>
+        <title>DETECTING</title>
+</head>
+
+<body>  
+        <p>
+        {% if result == True %}
+            <h1>이상 감지!!</h1>
+            <a href="/camera"> 사진찍기</a>
+        {% else %}
+            <h1>동작 감지 중...</h1>
+            <p>이상 없음</p>
+        {% endif %}
+        </p>
+
+</body>
+
+</html>
+
+
+

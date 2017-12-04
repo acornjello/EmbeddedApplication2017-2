@@ -1,0 +1,23 @@
+<html>
+<head>
+        <title>CAMERA</title>
+</head>
+
+<body>  
+        <p>
+        <h1>이상 감지!!</h1>
+        <a href="/detecting"> (detecting 모드로 돌아가기)</a>
+        </p>
+
+        {% if filename %}
+            <img src="/static/{{filename}}">
+        {% endif %}
+        
+        
+        {% for label in labels %}
+            <p>{{ label.description }}</p>
+        {% endfor %}
+        
+</body>
+
+</html>

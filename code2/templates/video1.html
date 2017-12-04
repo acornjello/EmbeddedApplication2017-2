@@ -1,0 +1,337 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+Design by TEMPLATED
+http://templated.co
+Released for free under the Creative Commons Attribution License
+
+Name       : Undeviating
+Description: A two-column, fixed-width design with dark color scheme.
+Version    : 1.0
+Released   : 20140322
+
+-->
+<!--{% extends "layout.html" %}-->
+<!--{% block content %}-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<title>TRY NOT TO SING</title>
+<link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900|Quicksand:400,700|Questrial" rel="stylesheet" />
+<link href="static/css/default.css" rel="stylesheet" type="text/css" media="all" />
+<link href="static/css/fonts.css" rel="stylesheet" type="text/css" media="all" />
+<script type=text/javascript src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.6.2/firebase.js"></script>
+<script type=text/javascript>
+    var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+
+</head>
+<body>
+<div id="header-wrapper">
+	<div id="header" class="container">
+		<div id="logo">
+        	<!--<span class="icon icon-cog"></span>-->
+			<h1><a href="#">Embedde Application Project</a></h1>
+		</div>
+		<div id="menu">
+			<ul>
+				<li><a href="/" accesskey="1" title="">Homepage</a></li>
+				<li><a href="#" accesskey="2" title="">REACTION</a></li>
+				<li class="active"><a href="/challenge" accesskey="3" title="">CAHLLENGE</a></li>
+			</ul>
+		</div>
+	</div>
+</div>
+<div class="wrapper">
+	<div id="banner" class="container">
+		<!--<img src="static/images/banner.jpg" width="1200" height="500" alt="" />-->
+		<iframe id="youtube" onclick="clickYoutube();" width="960" height="500"
+				src="https://www.youtube.com/embed/W5iEPR6Ht5s?rel=0&enablejsapi=1&controls=1" frameborder="0" allowfullscreen>
+		</iframe>
+		<!--style="padding-left: 115px"-->
+	</div>
+	<div id="welcome" class="container">
+ <!--style="padding-left: 0; padding-top: 20px;"-->
+		<div class="title">
+		<h2>TRY NOT TO SING!</h2>
+			 <!--style="padding-left: 120px;"-->
+		<!--</div>-->
+		<!--<p>This is <strong>Undeviating</strong>, a free, fully standards-compliant CSS template designed by <a href="http://templated.co" rel="nofollow">TEMPLATED</a>. The photos in this template are from <a href="http://fotogrph.com/"> Fotogrph</a>. This free template is released under the <a href="http://templated.co/license">Creative Commons Attribution</a> license, so you're pretty much free to do whatever you want with it (even use it commercially) provided you give us credit for it. Have fun :) </p>-->
+		<!--</div>-->
+			<div id="three-column" class="container">
+				<!--style="margin-top: 20px;-->
+				<div><span class="arrow-down"></span></div>
+				<!--<div id="tbox1" style="padding-left: 25px; padding-top: 20px; width: 170px;">-->
+				<div id="tbox1" style="padding-left: 10px;">
+					<!--<div class="title">-->
+						<!--<h2>Maecenas luctus</h2>-->
+					<!--</div>-->
+					<!--<p>Nullam non wisi a sem semper eleifend. Donec mattis libero eget urna. Duis pretium velit ac suscipit mauris. Proin eu wisi suscipit nulla suscipit interdum.</p>-->
+					<a href="#" class="button" onclick="playYoutube();">PLAY</a> </div>
+				<!--<div id="tbox2" style="padding-left: 0; padding-top: 20px; width: 170px;">-->
+				<div id="tbox2">
+					<a href="#" class="button" onclick="pauseYoutube();">PAUSE</a> </div>
+				<div id="tbox3">
+					<a href="#" class="button" onclick="stopYoutube();">STOP</a> </div>
+				<div id="tbox4">
+					<a href="#" class="button" onclick="showResult();">RESULT</a> </div>
+
+			</div>
+		</div>
+		<p id="playerState"> 정지 중 </p>
+		<p id="buttonState"> NONE </p>
+		<p id="numOfFaceDetect">0</p>
+		<p id="result">[결과]</p>
+	</div>
+
+
+
+</div>
+
+<script type="text/javascript">
+
+    var buttonState = "NONE"; // PLAY, PAUSE, STOP
+    var playerState, tempPlayerState;
+
+    /**
+     * Youtube API 로드
+     */
+    var tag = document.createElement('script');
+    tag.src = "http://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    /**
+     * onYouTubeIframeAPIReady 함수는 필수로 구현해야 한다.
+     * 플레이어 API에 대한 JavaScript 다운로드 완료 시 API가 이 함수 호출한>다.
+     * 페이지 로드 시 표시할 플레이어 개체를 만들어야 한다.
+     */
+    var player;
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('youtube', {
+            height: '315',
+            width: '560',
+            videoId: '9bZkp7q19f0',
+            playerVars: {
+                controls: '2'
+            },
+            events: {
+                'onReady': onPlayerReady,               // 플레이어 로드가 >완료되고 API 호출을 받을 준비가 될 때마다 실행
+                'onStateChange': onPlayerStateChange    // 플레이어의 상태가 변경될 때마다 실행
+            }
+        });
+    }
+    function onPlayerReady(event) {
+        console.log('onPlayerReady 실행');
+    }
+
+    var requestNum = 0;
+    var detectNum = 0;
+    var startCapture;
+    var isStopCapture = false;
+    var anger=[0, 0, 0, 0, 0, 0];
+    var joy=[0, 0, 0, 0, 0, 0];
+    var surprise=[0, 0, 0, 0, 0, 0];
+    var sorrow=[0, 0, 0, 0, 0, 0];
+    var likelihood_name = ['UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
+                       'LIKELY', 'VERY_LIKELY']
+    function onPlayerStateChange(event) {
+        playerState = event.data == YT.PlayerState.ENDED ? '종료됨' :
+                    event.data == YT.PlayerState.PLAYING ? '재생 중' :
+                    event.data == YT.PlayerState.PAUSED ? '일시중지 됨' :
+                    event.data == YT.PlayerState.BUFFERING ? '버퍼링 중' :
+                    event.data == YT.PlayerState.CUED ? '재생준비 완료됨' :
+                    event.data == -1 ? '시작되지 않음' : '예외';
+
+        console.log('onPlayerStateChange 실행: ' + playerState + " btn: " + buttonState);
+
+        printPlayerState();
+        printButtonState();
+
+
+        if ( playerState == '재생 중' ) {
+            if ( tempPlayerState !== '재생 중' ) {
+                // 재생중이 아니었는데, 재생중으로 바뀌었을 때 => 캡처 시작해야함.
+                // 그런데 이미 캡처를 하고 있을 경우 => 캡처를 중단?
+                // if ( startCapture ) clearInterval(startCapture);
+                console.log('[ startCapture ] request : ' + requestNum + ', detect : ' + detectNum);
+                isStopCapture = false;
+
+                startCapture = setInterval(
+                    function() {
+                        if(isStopCapture == true) {
+                            isStopCapture = false;
+                            console.log('isStopCapture return');
+                            return;
+                        }
+
+                        $.ajax({
+                            type: "GET",
+                            url: $SCRIPT_ROOT + "/echo2",
+                            contentType: "application/json; charset=utf-8",
+                            //data: { echoValue: $('input[name="echoText"]').val() }
+                            data: { echoValue : requestNum },
+                            success: function(data) {
+                                //for (label in data.labels) {
+                                // 매 요청마다의 결과 (한 사람만 보여줌)
+                                $('#echoResult').text( "[ " + requestNum + " ]"
+                                    + data.anger[0] + " "
+                                    + data.joy[0] + " "
+                                    + data.surprise[0] + " "
+                                    + data.sorrow[0] + " ");
+
+                                // data.anger[0] : 인식된 사람(0)의 anger 지수
+                                anger[data.anger[0]] = anger[data.anger[0]] + 1;
+                                joy[data.joy[0]] = joy[data.joy[0]] + 1;
+                                surprise[data.surprise[0]] = surprise[data.surprise[0]] + 1;
+                                sorrow[data.sorrow[0]] = sorrow[data.sorrow[0]] + 1;
+
+                                // 실제 face detect 결과를 얻었으면 1
+                                if(data.detect == 1) {
+                                    detectNum = detectNum + 1;
+                                    console.log('detectNum : ' + detectNum);
+                                }
+
+
+								if (detectNum !== requestNum) {
+									var element = document.getElementById("result");
+									element.innerHTML = '처리 중';
+								} else {
+									// detect가 멈추고, 처리를 완료했을 때 해당 결과까지를 출력
+									// 이 상태에서 결과 보기를 눌렀을 때=> Firebase 업데이트/다른사람 것 가져오기
+									var element = document.getElementById("result");
+									element.innerHTML = '결과1 : </br>'
+									+ ' ###anger####</br>'
+									+ ' UNKNOWN - ' + joy[0] + '</br>'
+									+ ' VERY UNLIKELEY - ' + joy[1] + '</br>'
+									+ ' UNLIKELEY - ' + joy[2] + '</br>'
+									+ ' POSSIBLE - ' + joy[3] + '</br>'
+									+ ' LIKELEY - ' + joy[4] + '</br>'
+									+ ' VERY LIKELEY - ' + joy[5] + '</br>'
+									console.log('결과 1');
+								}
+
+                            }
+                        });
+						requestNum = requestNum+1;
+                        console.log('requestNum : ' + requestNum);
+                    }, 5000
+                );
+            }
+        }
+        else {
+            isStopCapture = true;
+            clearInterval(startCapture);
+            console.log('[ stopCapture ] request : ' + requestNum + ', detect : ' + detectNum);
+        }
+
+        tempPlayerState = playerState;
+        collectPlayCount(event.data);
+
+
+    }
+
+    function printPlayerState() {
+        var element = document.getElementById("playerState");
+        element.innerHTML = playerState;
+    }
+
+    function printButtonState() {
+        var e = document.getElementById("buttonState");
+        e.innerHTML = playerState;
+    }
+
+    function playYoutube() {
+        buttonState = "PLAY"
+        player.playVideo();
+    }
+    function pauseYoutube() {
+        buttonState = "PAUSE"
+        player.pauseVideo();
+    }
+    function stopYoutube() {
+        buttonState = "STOP"
+        player.seekTo(0, true);     // 영상의 시간을 0초로 이동시킨다.
+        player.stopVideo();
+    }
+
+    function showResult() {
+		getCurVideo();
+    }
+
+	// Initialize Firebase
+	var config = {
+		apiKey: "AIzaSyAkbj4f7iIGRql-0tZbIo05L1VWyFdh9ao",
+		authDomain: "embeddedapplication2017-2.firebaseapp.com",
+		databaseURL: "https://embeddedapplication2017-2.firebaseio.com",
+		projectId: "embeddedapplication2017-2",
+		storageBucket: "embeddedapplication2017-2.appspot.com",
+		messagingSenderId: "697808371848"
+	};
+	firebase.initializeApp(config);
+
+	var database = firebase.database.ref();
+	var challengeRef = database.ref('/challenge');
+	var curVideoRef = database.ref('/challenge/video1/joy');
+
+	function getCurVideo() {
+		var message
+		curVideoRef.once('value', function(snapshot) {
+			message = snapshot.val();
+		});
+		var element = document.getElementById("result");
+		element.innerHTML = message;
+	}
+
+
+
+	function modify() {
+	    curVideoRef.update({
+
+		});
+	}
+
+
+
+	function writeResultData(videoName, anger, joy, surprise, sorrow ) {
+	    firebase.database().ref(videoName).set({
+
+		})
+	}
+
+	function writeUserData(userId, name, email, imageUrl) {
+
+	}
+
+
+	function toggleStar(postRef) {
+		postRef.transaction(function(post) {
+			if (post) {
+			  if (post) {
+				post.starCount++;
+				if (!post.stars) {
+				  post.stars = {};
+				}
+				//post.stars[uid] = true;
+			  }
+			}
+			return post;
+		});
+	}
+
+
+    var played = false;
+    function collectPlayCount(data) {
+        if (data == YT.PlayerState.PLAYING && played == false) {
+            played = true;
+            console.log('statistics');
+        }
+    }
+</script>
+
+</body>
+</html>
+<!--{% endblock %}-->

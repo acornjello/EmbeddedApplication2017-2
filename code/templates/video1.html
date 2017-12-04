@@ -1,0 +1,246 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>VIDEO1</h1>
+
+<div id="wrapYoutube" width="420" height="315">
+    <iframe id="youtube" onclick="clickYoutube();" width="420" height="315"
+            src="https://www.youtube.com/embed/W5iEPR6Ht5s?rel=0&enablejsapi=1&controls=0" frameborder="0" allowfullscreen>
+    </iframe>
+</div>
+
+
+
+<h2> PlayerStates </h2>
+
+<p id="playerState"> 정지 중 </p>
+<p id="buttonState"> NONE </p>
+<p class="isHover"> isHover </p>
+
+<button type="button" onclick="playYoutube();">Play</button>
+<button type="button" onclick="pauseYoutube();">Pause</button>
+<button type="button" onclick="stopYoutube();">Stop</button>
+
+
+<input type='text' size='10' id='echoText' name='echoText'>
+
+
+<button type='button' id='submitBtn' name='submitBtn'>Submit via AJAX</button><br /><br />
+<strong><div id='echoResult'></div></strong>
+<p id="numOfFaceDetect">0</p>
+<p id="result">결과 : </p>
+
+{% for label in labels %}
+<p>{{ label.description }}</p>
+{% endfor %}
+
+<script type="text/javascript">
+
+    var c = 0;
+    var curNum = 0;
+    var buttonState = "NONE"; // PLAY, PAUSE, STOP
+    var playerState, tempPlayerState;
+
+    var startCapture;
+    var isStopCapture = false;
+    var anger=[0, 0, 0, 0, 0, 0];
+    var joy=[0, 0, 0, 0, 0, 0];
+    var surprise=[0, 0, 0, 0, 0, 0];
+    var sorrow=[0, 0, 0, 0, 0, 0];
+    var likelihood_name = ['UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
+                       'LIKELY', 'VERY_LIKELY']
+
+    /**
+     * Youtube API 로드
+     */
+    var tag = document.createElement('script');
+    tag.src = "http://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    /**
+     * onYouTubeIframeAPIReady 함수는 필수로 구현해야 한다.
+     * 플레이어 API에 대한 JavaScript 다운로드 완료 시 API가 이 함수 호출한>다.
+     * 페이지 로드 시 표시할 플레이어 개체를 만들어야 한다.
+     */
+    var player;
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('youtube', {
+            height: '315',            // <iframe> 태그 지정시 필요없음
+            width: '560',             // <iframe> 태그 지정시 필요없음
+            videoId: '9bZkp7q19f0',   // <iframe> 태그 지정시 필요없음
+            playerVars: {             // <iframe> 태그 지정시 필요없음
+                controls: '2'
+            },
+            events: {
+                'onReady': onPlayerReady,               // 플레이어 로드가 >완료되고 API 호출을 받을 준비가 될 때마다 실행
+                'onStateChange': onPlayerStateChange    // 플레이어의 상태가 변경될 때마다 실행
+            }
+        });
+    }
+    function onPlayerReady(event) {
+        console.log('onPlayerReady 실행');
+    }
+
+    function onPlayerStateChange(event) {
+        playerState = event.data == YT.PlayerState.ENDED ? '종료됨' :
+                    event.data == YT.PlayerState.PLAYING ? '재생 중' :
+                    event.data == YT.PlayerState.PAUSED ? '일시중지 됨' :
+                    event.data == YT.PlayerState.BUFFERING ? '버퍼링 중' :
+                    event.data == YT.PlayerState.CUED ? '재생준비 완료됨' :
+                    event.data == -1 ? '시작되지 않음' : '예외';
+
+        console.log('onPlayerStateChange 실행: ' + playerState + " btn: " + buttonState);
+
+        printPlayerState();
+        printButtonState();
+
+        if (playerState == '재생 중') {
+            if (tempPlayerState !== '재생 중') {
+                if(startCapture) clearInterval(startCapture);
+                console.log('startCapture');
+                isStopCapture = false;
+
+                startCapture = setInterval(
+                    function() {
+                        if(isStopCapture == true) return;
+                        $.ajax({
+                            type: "GET",
+                            url: $SCRIPT_ROOT + "/echo2/",
+                            contentType: "application/json; charset=utf-8",
+                            //data: { echoValue: $('input[name="echoText"]').val() }
+                            data: { a : 0 }
+                            ,
+                            success: function(data) {
+                                //for (label in data.labels) {
+                                $('#echoResult').text( "[ " +c+ " ]"
+                                    + data.anger[0] + " "
+                                    + data.joy[0] + " "
+                                    + data.surprise[0] + " "
+                                    + data.sorrow[0] + " ");
+
+                                anger[data.anger[0]] = anger[data.anger[0]] + 1;
+                                joy[data.joy[0]] = joy[data.joy[0]] + 1;
+                                surprise[data.surprise[0]] = surprise[data.surprise[0]] + 1;
+                                sorrow[data.sorrow[0]] = sorrow[data.sorrow[0]] + 1;
+
+                                if(data.detect == 1) {
+                                    curNum = curNum + 1;
+                                    console.log('detectNum : ' + curNum);
+                                }
+
+
+                                if(isStopCapture == true) {
+                                    if (curNum !== c) {
+                                        var element = document.getElementById("result");
+                                        element.innerHTML = '처리 중';
+                                    } else {
+                                        var element = document.getElementById("result");
+                                        element.innerHTML = '결과 : </br>'
+                                        + '###anger####</br>'
+                                        + ' UNKNOWN - ' + anger[0] + '</br>'
+                                        + ' VERY UNLIKLEY - ' + anger[1] + '</br>'
+                                        + ' UNLIKLEY - ' + anger[2] + '</br>'
+                                        + ' POSSIBLE - ' + anger[3] + '</br>'
+                                        + ' VERY LIKLEY - ' + anger[4] + '</br>'
+                                        + ' LIKLEY - ' + anger[5] + '</br>'
+                                    }
+                                }
+
+                                //}
+                                //console.log(data.value[0] + " " + data.value[0]);
+                            }
+                        });
+
+                        c = c+1;
+                        console.log('requestNum : ' + c);
+                    }, 5000
+                );
+            }
+        }
+        else {
+            isStopCapture = true;
+            clearInterval(startCapture);
+            console.log('stopCapture' + c);
+
+
+        }
+        tempPlayerState = playerState;
+
+        // 재생여부를 통계로 쌓는다.
+        collectPlayCount(event.data);
+    }
+
+    function printPlayerState() {
+        var element = document.getElementById("playerState");
+        element.innerHTML = playerState;
+    }
+
+    function printButtonState() {
+        var e = document.getElementById("buttonState");
+        e.innerHTML = buttonState;
+    }
+
+    function playYoutube() {
+        // 플레이어 자동실행 (주의: 모바일에서는 자동실행되지 않음)
+        buttonState = "PLAY"
+        player.playVideo();
+        //startCapture();
+    }
+    function pauseYoutube() {
+        buttonState = "PAUSE"
+        player.pauseVideo();
+    }
+    function stopYoutube() {
+        buttonState = "STOP"
+        player.seekTo(0, true);     // 영상의 시간을 0초로 이동시킨다.
+        player.stopVideo();
+    }
+    var played = false;
+    function collectPlayCount(data) {
+        if (data == YT.PlayerState.PLAYING && played == false) {
+            // todo statistics
+            played = true;
+            console.log('statistics');
+        }
+    }
+
+    function startCapture() {
+        startCapture = setInterval(
+            function myFunction(x) {
+                $.getJSON('/captureUserFace', {post: playerState},
+                    function(data) {
+                        var faces = data.result;
+                        console.log('python response : ' + faces);
+                    }
+                );
+            }, 3000 );
+    };
+    stopCapture = function() {
+        clearInterval(startCapture);
+    }
+</script>
+
+<script type=text/javascript>
+    $(function() {
+        $("#submitBtn").click(function() {
+            $.ajax({
+                type: "GET",
+                url: $SCRIPT_ROOT + "/echo2/",
+                contentType: "application/json; charset=utf-8",
+                data: { echoValue: $('input[name="echoText"]').val() },
+                success: function(data) {
+                    //for (label in data.labels) {
+                    $('#echoResult').text(data.anger[0] + " "
+                        + data.joy[0] + " "
+                        + data.surprise[0] + " "
+                        + data.sorrow[0] + " ");
+                    //    console.log(label);
+                    //}
+                    //console.log(data.value[0] + " " + data.value[0]);
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

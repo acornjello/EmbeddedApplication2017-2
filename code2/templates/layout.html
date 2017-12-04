@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Embedded Application Project 2017-2</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="static/css/main.css" />
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900|Quicksand:400,700|Questrial" rel="stylesheet" />
+    <link href="static/css/default.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="static/css/fonts.css" rel="stylesheet" type="text/css" media="all" />
+    <script type=text/javascript src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script type=text/javascript>
+        var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+    </script>
+</head>
+
+<body>
+    {% block content %}{% endblock %}
+</body>
+
+</html>
